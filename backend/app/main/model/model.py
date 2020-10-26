@@ -5,8 +5,16 @@ db = SQLAlchemy()
 
 product_images = db.Table(
     'product_images',
-    db.Column('image_id', db.Integer, db.ForeignKey('images.id', ondelete="CASCADE")),
-    db.Column('product_id', db.Integer, db.ForeignKey('products.id', ondelete="CASCADE"))
+    db.Column(
+        'image_id',
+        db.Integer,
+        db.ForeignKey('images.id', ondelete="CASCADE")
+    ),
+    db.Column(
+        'product_id',
+        db.Integer,
+        db.ForeignKey('products.id', ondelete="CASCADE")
+    )
 )
 
 
@@ -15,7 +23,11 @@ class Image(db.Model):
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     url = db.Column(db.String(255), unique=True, nullable=False)
-    product_logo = db.relationship("Product", uselist=False, back_populates="logo")
+    product_logo = db.relationship(
+        "Product",
+        uselist=False,
+        back_populates="logo"
+    )
     product = db.relationship(
         "Product",
         secondary=product_images,
@@ -50,9 +62,21 @@ class Product(db.Model):
         server_onupdate=db.func.now()
     )
 
-variant_images = db.Table('variant_images',
-    db.Column('image_id', db.Integer, db.ForeignKey('images.id'), primary_key=True),
-    db.Column('variant_id', db.Integer, db.ForeignKey('variants.id'), primary_key=True)
+
+variant_images = db.Table(
+    'variant_images',
+    db.Column(
+        'image_id',
+        db.Integer,
+        db.ForeignKey('images.id'),
+        primary_key=True
+    ),
+    db.Column(
+        'variant_id',
+        db.Integer,
+        db.ForeignKey('variants.id'),
+        primary_key=True
+    )
 )
 
 
@@ -63,7 +87,11 @@ class Variant(db.Model):
     name = db.Column(db.String(100), nullable=False)
     size = db.Column(db.String(100), nullable=True)
     color = db.Column(db.String(25), nullable=True)
-    product_id = db.Column(db.Integer, db.ForeignKey("products.id"), nullable=False)
+    product_id = db.Column(
+        db.Integer,
+        db.ForeignKey("products.id"),
+        nullable=False
+    )
     product = db.relationship("Product", back_populates="variants")
     images = db.relationship(
         'Image',

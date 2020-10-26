@@ -1,5 +1,4 @@
 import json
-import typing
 from app.main.model import (
     Image,
     ImageInfo,
@@ -23,12 +22,12 @@ class VariantManager:
         )
 
     @classmethod
-    def get_variant_by_id(cls, variant_id):
+    def get_variant_by_id(cls, variant_id: int):
         variant_obj = Variant.query.get(variant_id)
         return VariantMapper.map_variant_obj_to_json(variant_obj)
 
     @classmethod
-    def generate_variant_for_product(cls, variant: VariantInfo):
+    def generate_variant_for_product(cls, variant: VariantInfo) -> Variant:
         with Transaction(db.session) as session:
             image_manager = ImageManager()
             variant_obj = Variant(
@@ -47,7 +46,7 @@ class VariantManager:
             return variant_obj
 
     @classmethod
-    def update_variant(cls, variant_id:int, variant: VariantInfo):
+    def update_variant(cls, variant_id: int, variant: VariantInfo) -> Variant:
         with Transaction(db.session) as session:
             image_manager = ImageManager()
             variant_obj = Variant.query.get(variant_id)
@@ -55,12 +54,13 @@ class VariantManager:
             variant_obj.name = variant.name
             variant_obj.color = variant.color
             variant_obj.size = variant.size
-            
 
             image_obj_ids = [img.id for img in variant_obj.images]
             image_ids = [img.id for img in variant.existing_images]
             deleted_image_ids = set(image_obj_ids).difference(set(image_ids))
-            deleted_images = Image.query.filter(Image.id.in_(tuple(deleted_image_ids)))
+            deleted_images = Image.query.filter(
+                Image.id.in_(tuple(deleted_image_ids))
+            )
 
             for deleted_image in deleted_images:
                 variant_obj.images.remove(deleted_image)
@@ -82,7 +82,7 @@ class VariantManager:
             return variant_obj
 
     @classmethod
-    def remove_variant(cls, variant_id):
+    def remove_variant(cls, variant_id: int):
         with Transaction(db.session) as session:
             variant_obj = Variant.query.get(variant_id)
             image_manager = ImageManager()
@@ -97,7 +97,7 @@ class VariantManager:
 
 class VariantMapper:
     @classmethod
-    def map_json_to_variant_info(cls, data: json):
+    def map_json_to_variant_info(cls, data: json) -> VariantInfo:
         images = []
         if data.get('images'):
             for image_data in data.get('images'):
@@ -113,7 +113,7 @@ class VariantMapper:
         )
 
     @classmethod
-    def map_obj_to_variant_info(cls, variant):
+    def map_obj_to_variant_info(cls, variant: Variant) -> VariantInfo:
         return VariantInfo(
             id=variant.id,
             name=variant.name,
@@ -124,7 +124,7 @@ class VariantMapper:
             created_at=variant.created_at,
             updated_at=variant.updated_at
         )
-    
+
     @classmethod
     def map_variant_obj_to_json(cls, variant: Variant):
         return dict(

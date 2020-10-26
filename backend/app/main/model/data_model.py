@@ -2,6 +2,7 @@ from typing import List
 from datetime import datetime
 from werkzeug import FileStorage
 
+
 class ImageInfo:
     id: int
     url: str

@@ -1,14 +1,11 @@
 import json
-import typing
 
 from app.main.exception import NotFoundError
 from app.main.model import (
     Image,
     Product,
-    Variant,
     ImageInfo,
     ProductInfo,
-    VariantInfo,
     db
 )
 
@@ -20,7 +17,12 @@ class ProductManager:
     @classmethod
     def get_products(cls):
         products = Product.query.all()
-        return [ProductMapper.map_product_obj_to_json(product) for product in products]
+        return list(
+            map(
+                lambda product: ProductMapper.map_product_obj_to_json(product),
+                products
+            )
+        )
 
     @classmethod
     def get_product_by_id(cls, product_id):
@@ -28,7 +30,6 @@ class ProductManager:
         if not product:
             raise NotFoundError(id=product_id, message='Product not found')
         return ProductMapper.map_product_obj_to_json(product)
-
 
     @classmethod
     def generate_product(cls, product: ProductInfo):
@@ -42,18 +43,18 @@ class ProductManager:
             if logo:
                 logo_url = image_manager.populate_upload(logo)
                 product_obj.logo = Image(url=logo_url)
-            
+
             for image in product.images:
                 image_url = image_manager.populate_upload(image.img_file)
                 product_obj.images.append(Image(url=image_url))
-            
+
             session.add(product_obj)
             session.commit()
             image_manager.upload()
             return product_obj
 
     @classmethod
-    def update_product(cls, product_id:int, product: ProductInfo):
+    def update_product(cls, product_id: int, product: ProductInfo) -> Product:
         with Transaction(db.session) as session:
             image_manager = ImageManager()
             product_obj = Product.query.get(product_id)
@@ -63,7 +64,7 @@ class ProductManager:
             product_obj.name = product.name
             product_obj.description = product.description
             deleted_logo = None
-            
+
             if product.logo and product.logo.img_file:
                 if product_obj.logo:
                     deleted_logo = product_obj.logo
@@ -80,7 +81,9 @@ class ProductManager:
             image_obj_ids = [img.id for img in product_obj.images]
             image_ids = [img.id for img in product.existing_images]
             deleted_image_ids = set(image_obj_ids).difference(set(image_ids))
-            deleted_images = Image.query.filter(Image.id.in_(tuple(deleted_image_ids)))
+            deleted_images = Image.query.filter(
+                Image.id.in_(tuple(deleted_image_ids))
+            )
 
             for deleted_image in deleted_images:
                 product_obj.images.remove(deleted_image)
@@ -102,7 +105,6 @@ class ProductManager:
             image_manager.flush()
             image_manager.upload()
             return product_obj
-        
 
 
 class ProductMapper:
@@ -131,7 +133,12 @@ class ProductMapper:
             name=obj.name,
             description=obj.description,
             logo=ImageInfo(id=obj.logo.id, url=obj.logo.url) or None,
-            images=list(map(lambda image: ImageInfo(id=image.id, url=image.url), obj.images or []))
+            images=list(
+                map(
+                    lambda image: ImageInfo(id=image.id, url=image.url),
+                    obj.images or []
+                )
+            )
         )
 
     @classmethod
@@ -141,7 +148,10 @@ class ProductMapper:
             name=product.name,
             description=product.description,
             images=[dict(id=img.id, url=img.url) for img in product.images],
-            logo=dict(id=product.logo.id, url=product.logo.url) if product.logo else None,
+            logo=dict(
+                id=product.logo.id,
+                url=product.logo.url
+            ) if product.logo else None,
             created_at=product.created_at.__str__(),
             updated_at=product.updated_at.__str__()
         )
