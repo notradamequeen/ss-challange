@@ -38,13 +38,15 @@ class ProductManager:
                 name=product.name,
                 description=product.description
             )
-            logo = product.logo.img_file
+            logo = product.logo
             image_manager = ImageManager()
-            if logo:
-                logo_url = image_manager.populate_upload(logo)
+            if logo and logo.img_file:
+                logo_url = image_manager.populate_upload(logo.img_file)
                 product_obj.logo = Image(url=logo_url)
 
             for image in product.images:
+                if not image.img_file:
+                    continue
                 image_url = image_manager.populate_upload(image.img_file)
                 product_obj.images.append(Image(url=image_url))
 

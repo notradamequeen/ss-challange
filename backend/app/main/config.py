@@ -12,7 +12,7 @@ class Config:
 
 class DevelopmentConfig(Config):
     DEBUG = True
-    SQLALCHEMY_DATABASE_URI = 'mysql+pymysql://sourcesageuser:password!@0.0.0.0:32000/sourcesagedb'
+    SQLALCHEMY_DATABASE_URI = 'mysql+pymysql://sourcesageuser:password!@db:3306/sourcesagedb'
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
 

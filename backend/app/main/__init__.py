@@ -1,6 +1,7 @@
 from flask import Flask
 from flask_bcrypt import Bcrypt
 from flask_restplus import Api
+from flask_cors import CORS
 
 from .config import config_by_name
 from .api.product import ProductListAPI, ProductDetailAPI
@@ -27,5 +28,6 @@ def create_app(config_name):
     api.add_resource(VariantDetailAPI, '/variant/<int:variant_id>/')
     print(api.urls)
     flask_bcrypt.init_app(app)
+    CORS(app)
 
     return app
